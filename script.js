@@ -107,12 +107,11 @@ function toggleMobileNav() {
 
 // Ensure functions are globally accessible
 window.toggleMobileNav = toggleMobileNav;
-window.resetContactForm = resetContactForm;
 
 /**
  * Handle Contact Form AJAX Submission
  */
-document.addEventListener('submit', function (e) {
+document.addEventListener('submit', async function (e) {
     if (e.target && e.target.id === 'contact-form') {
         e.preventDefault();
         
@@ -131,16 +130,17 @@ document.addEventListener('submit', function (e) {
         btnText.classList.add('d-none');
         btnLoader.classList.remove('d-none');
         
-        const formData = new FormData(form);
+        const data = new FormData(form);
         
-        fetch(form.action, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => {
+        try {
+            const response = await fetch("https://formsubmit.co/ajax/amoginfotech@gmail.com", {
+                method: "POST",
+                body: data,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+
             btn.disabled = false;
             btnText.classList.remove('d-none');
             btnLoader.classList.add('d-none');
@@ -148,23 +148,27 @@ document.addEventListener('submit', function (e) {
             if (response.ok) {
                 // SUCCESS: Green font, keep form, reset it
                 form.reset();
-                statusArea.innerHTML = `<span class="status-success"><i class="fa-solid fa-circle-check"></i> Form Submitted Successfully. Thank you!</span>`;
+                statusArea.innerHTML = `<span class="status-success"><i class="fa-solid fa-circle-check"></i> Thanks! Your message has been sent.</span>`;
                 statusArea.style.display = 'block';
             } else {
                 // FAILURE: Red font, keep form
-                statusArea.innerHTML = `<span class="status-error"><i class="fa-solid fa-triangle-exclamation"></i> Submission Failed. Please try again.</span>`;
+                const result = await response.json();
+                if (result.errors) {
+                    statusArea.innerHTML = `<span class="status-error"><i class="fa-solid fa-triangle-exclamation"></i> ${result.errors.map(e => e.message).join(", ")}</span>`;
+                } else {
+                    statusArea.innerHTML = `<span class="status-error"><i class="fa-solid fa-triangle-exclamation"></i> Oops! Something went wrong.</span>`;
+                }
                 statusArea.style.display = 'block';
             }
-        })
-        .catch(error => {
+        } catch (error) {
             console.error('Error:', error);
             btn.disabled = false;
             btnText.classList.remove('d-none');
             btnLoader.classList.add('d-none');
             
             // ERROR: Red font, keep form
-            statusArea.innerHTML = `<span class="status-error">Connection Error. Please check your internet or contact us directly.</span>`;
+            statusArea.innerHTML = `<span class="status-error"><i class="fa-solid fa-wifi"></i> Network error. Please try again.</span>`;
             statusArea.style.display = 'block';
-        });
+        }
     }
 });
