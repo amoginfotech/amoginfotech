@@ -172,3 +172,42 @@ document.addEventListener('submit', async function (e) {
         }
     }
 });
+
+/**
+ * AI Readiness Quiz Logic
+ */
+let quizData = {};
+
+function quizNext(choice) {
+    quizData.focus = choice;
+    const currentStep = document.querySelector('.quiz-step[data-step="1"]');
+    const nextStep = document.querySelector('.quiz-step[data-step="2"]');
+    
+    currentStep.classList.remove('active');
+    nextStep.classList.add('active');
+}
+
+function quizResult(choice) {
+    quizData.dataState = choice;
+    const currentStep = document.querySelector('.quiz-step[data-step="2"]');
+    const resultScreen = document.getElementById('quiz-results-screen');
+    const recommendationArea = document.getElementById('quiz-recommendation');
+    
+    currentStep.classList.remove('active');
+    resultScreen.classList.add('active');
+    
+    let rec = "";
+    if (quizData.dataState === 'Siloed') {
+        rec = `<strong>Recommendation:</strong> You need <strong>Data Management & AI Readiness</strong>. Your data silos are currently blocking AI ROI. We suggest starting with a Data Audit.`;
+    } else if (quizData.focus === 'Real Estate') {
+        rec = `<strong>Recommendation:</strong> You are ready for the <strong>Claybrix App</strong>. Your focus on PropTech and established data makes you a prime candidate for our Real Estate automation suite.`;
+    } else {
+        rec = `<strong>Recommendation:</strong> You should explore <strong>AI Application Development</strong>. Custom autonomous agents can help you scale your ${quizData.focus} operations instantly.`;
+    }
+    
+    recommendationArea.innerHTML = `<p class="lead">${rec}</p>`;
+}
+
+// Ensure functions are globally accessible
+window.quizNext = quizNext;
+window.quizResult = quizResult;
